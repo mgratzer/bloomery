@@ -46,9 +46,9 @@ No dependencies to install — the project is pure bash and markdown.
 
 | Command | What it does |
 |---------|-------------|
-| `bats skills/bloomery/tests/` | Run the full BATS test suite (63 tests) |
+| `bats skills/bloomery/tests/` | Run the full BATS test suite (72 tests) |
 | `bats skills/bloomery/tests/scaffold.bats` | Run scaffold.sh tests (24 tests) |
-| `bats skills/bloomery/tests/detect.bats` | Run detect.sh tests (26 tests) |
+| `bats skills/bloomery/tests/detect.bats` | Run detect.sh tests (34 tests) |
 | `bats skills/bloomery/tests/progress-update.bats` | Run progress-update.sh tests (13 tests) |
 
 ## Manual Testing
