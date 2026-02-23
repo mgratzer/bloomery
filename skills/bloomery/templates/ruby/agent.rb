@@ -11,6 +11,11 @@ end
 
 API_KEY = ENV["{{API_KEY_VAR}}"]
 abort("Missing {{API_KEY_VAR}} in .env file") unless API_KEY && !API_KEY.empty?
+{{#OPENAI}}
+
+BASE_URL = ENV["OPENAI_BASE_URL"] || "https://api.openai.com/v1"
+MODEL = ENV["MODEL_NAME"] || "gpt-4o"
+{{/OPENAI}}
 
 loop do
   print "> "

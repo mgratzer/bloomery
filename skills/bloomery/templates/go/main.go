@@ -8,6 +8,10 @@ import (
 )
 
 var apiKey string
+{{#OPENAI}}
+var baseURL string
+var modelName string
+{{/OPENAI}}
 
 func loadEnv() {
 	data, err := os.ReadFile(".env")
@@ -28,6 +32,16 @@ func loadEnv() {
 		fmt.Fprintln(os.Stderr, "Missing {{API_KEY_VAR}} in .env file")
 		os.Exit(1)
 	}
+{{#OPENAI}}
+	baseURL = os.Getenv("OPENAI_BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://api.openai.com/v1"
+	}
+	modelName = os.Getenv("MODEL_NAME")
+	if modelName == "" {
+		modelName = "gpt-4o"
+	}
+{{/OPENAI}}
 }
 
 func main() {

@@ -62,10 +62,48 @@ apply_template() {
   local template_file="$1"; shift
   local content
   content="$(<"$template_file")"
-  while [[ $# -ge 2 ]]; do
-    local key="$1" val="$2"; shift 2
-    content="${content//\{\{${key}\}\}/${val}}"
+
+  # Collect +BLOCK flags (sections to keep) and KEY VALUE pairs
+  local -a keep_blocks=()
+  local -a pairs=()
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == +* ]]; then
+      keep_blocks+=("${1#+}")
+      shift
+    elif [[ $# -ge 2 ]]; then
+      pairs+=("$1" "$2"); shift 2
+    else
+      shift
+    fi
   done
+
+  # Process {{#BLOCK}}...{{/BLOCK}} conditional sections in one awk pass:
+  # kept blocks have markers stripped; unmatched blocks are removed entirely
+  if [[ "$content" == *'{{#'* ]]; then
+    local keep_csv=""
+    for b in ${keep_blocks[@]+"${keep_blocks[@]}"}; do keep_csv="${keep_csv:+$keep_csv,}$b"; done
+    content=$(printf '%s\n' "$content" | awk -v keeps="$keep_csv" '
+      BEGIN { n = split(keeps, a, ","); for (i = 1; i <= n; i++) keep[a[i]] = 1 }
+      /^\{\{#[A-Za-z_]+\}\}$/ {
+        block = substr($0, 4, length($0) - 5)
+        if (block in keep) next; skip = 1; next
+      }
+      /^\{\{\/[A-Za-z_]+\}\}$/ {
+        block = substr($0, 4, length($0) - 5)
+        if (block in keep) next; skip = 0; next
+      }
+      !skip
+    ')
+  fi
+
+  # Simple {{KEY}} → value substitution
+  local i=0
+  while [[ $i -lt ${#pairs[@]} ]]; do
+    local key="${pairs[$i]}" val="${pairs[$((i+1))]}"
+    content="${content//\{\{${key}\}\}/${val}}"
+    i=$((i + 2))
+  done
+
   printf '%s\n' "$content"
 }
 
@@ -92,13 +130,13 @@ fi
 
 # --- Write starter code ---
 
+KEEP_BLOCKS=()
 if [[ "$PROVIDER" == "openai" ]]; then
-  TEMPLATE_ENTRY="${ENTRY_FILE%.*}.openai.${ENTRY_FILE##*.}"
-else
-  TEMPLATE_ENTRY="$ENTRY_FILE"
+  KEEP_BLOCKS=(+OPENAI)
 fi
-apply_template "$TEMPLATE_DIR/$LANGUAGE/$TEMPLATE_ENTRY" \
+apply_template "$TEMPLATE_DIR/$LANGUAGE/$ENTRY_FILE" \
   API_KEY_VAR "$ENV_VAR" \
+  ${KEEP_BLOCKS[@]+"${KEEP_BLOCKS[@]}"} \
   > "$AGENT_DIR/$ENTRY_FILE"
 
 # --- Write .env ---

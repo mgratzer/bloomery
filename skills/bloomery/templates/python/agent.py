@@ -15,6 +15,11 @@ API_KEY = os.environ.get("{{API_KEY_VAR}}")
 if not API_KEY:
     print("Missing {{API_KEY_VAR}} in .env file")
     exit(1)
+{{#OPENAI}}
+
+BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+MODEL = os.environ.get("MODEL_NAME", "gpt-4o")
+{{/OPENAI}}
 
 def main():
     while True:

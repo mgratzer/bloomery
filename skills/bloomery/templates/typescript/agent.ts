@@ -16,6 +16,11 @@ if (!API_KEY) {
   console.error("Missing {{API_KEY_VAR}} in .env file");
   process.exit(1);
 }
+{{#OPENAI}}
+
+const BASE_URL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+const MODEL = process.env.MODEL_NAME || "gpt-4o";
+{{/OPENAI}}
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const prompt = (q: string): Promise<string> =>
