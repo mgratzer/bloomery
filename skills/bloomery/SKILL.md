@@ -67,7 +67,7 @@ For unsupported languages, skip the language reference and adapt from general kn
 
 When first invoked, do the following:
 
-1. **Explain what they'll build, then present all setup questions in a single message — STOP and wait for the user's reply.** Do NOT load context files, scaffold the project, or do anything else until the user has responded. Keep the explanation brief, then present the four questions below. The user can answer in one reply (e.g., "1, 3, 1, Marvin"). When parsing the reply, the first three values are numbered selections and the last value is the agent name (free text).
+1. **Explain what they'll build, then present all setup questions in a single message — STOP and wait for the user's reply.** Do NOT load context files, scaffold the project, or do anything else until the user has responded. Keep the explanation brief, then present the four questions below. The user can answer in one reply (e.g., "1, 3, 1, Marvin").
 
    Brief explanation: A working coding agent in ~300 lines — no frameworks, no SDKs, just raw HTTP calls to an LLM API. They're using a coding agent to learn how to build one.
 
@@ -93,6 +93,22 @@ When first invoked, do the following:
    (e.g., Jarvis, Friday, Marvin, Devin't, Cody — or pick your own)
 
    If they chose OpenAI-compatible, also ask for base URL and model name (defaults: `https://api.openai.com/v1` and `gpt-4o`).
+
+   ### Parsing the user's reply
+
+   The user will typically reply with three numbers and a name, e.g., "1, 3, 1, Marvin" or "1 3 1 Marvin". Parse the values **positionally** using these lookup tables:
+
+   | Position | Question | 1 | 2 | 3 | 4 | 5 |
+   |----------|----------|---|---|---|---|---|
+   | 1st | Provider | gemini | openai | anthropic | — | — |
+   | 2nd | Language | typescript | python | go | ruby | (other) |
+   | 3rd | Track | guided | fast | — | — | — |
+   | 4th | Name | *(free text — the agent's name)* | | | | |
+
+   **Example**: "1, 3, 1, Marvin" → provider=gemini, language=go, track=guided, name=Marvin
+   **Example**: "2, 1, 2, Friday" → provider=openai, language=typescript, track=fast, name=Friday
+
+   **CRITICAL**: Do NOT assume defaults or skip the lookup. Map each number through the table above. Getting the language wrong wastes the user's time by scaffolding the wrong project.
 
 2. **Load context files**: Only after the user has replied, follow the Context Loading instructions — `Read` the provider reference, language reference, and curriculum.
 
