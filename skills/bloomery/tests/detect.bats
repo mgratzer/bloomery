@@ -246,6 +246,21 @@ EOF
   [[ "$output" == *'"detectedStep": 5'* ]]
 }
 
+@test "layer 2: step 5 — read_file declared but not implemented stays at step 5" {
+  mkdir -p proj
+  cat > proj/agent.ts << 'EOF'
+const messages = [{ role: "user", content: "hello" }];
+const systemInstruction = "You are helpful";
+const tools = [{ name: "list_files" }, { name: "read_file" }];
+const result = response.tool_calls[0];
+if (name === "list_files") { return listFiles(); }
+if (name === "read_file") { /* TODO: implement */ }
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 5'* ]]
+}
+
 @test "layer 2: step 6 — read_file with readFile (TypeScript)" {
   mkdir -p proj
   cat > proj/agent.ts << 'EOF'

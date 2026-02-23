@@ -45,9 +45,9 @@ Each `.bats` file:
 | Script | Tests | File |
 |--------|-------|------|
 | `scaffold.sh` | 25 | `tests/scaffold.bats` |
-| `detect.sh` | 34 | `tests/detect.bats` |
+| `detect.sh` | 35 | `tests/detect.bats` |
 | `progress-update.sh` | 13 | `tests/progress-update.bats` |
-| **Total** | **72** | |
+| **Total** | **73** | |
 
 ## CI
 
