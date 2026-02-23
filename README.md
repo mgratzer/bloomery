@@ -24,7 +24,7 @@ A working coding agent in ~300 lines of code. No frameworks, no SDKs. Just raw H
 
 ## Prerequisites
 
-- A coding agent that supports the [Agent Skills](https://agentskills.io) standard (see [Supported Agents](#supported-agents) below)
+- A coding agent that supports the [Agent Skills](https://agentskills.io) standard (see [Install](#install) below)
 - An API key for your chosen LLM provider (see below)
 - Your language of choice (TypeScript, Python, Go, Ruby, or anything that can do HTTP + JSON)
 
@@ -41,250 +41,26 @@ Pick whichever LLM API you want to build against:
 
 The tutorial adapts to your provider. The concepts are the same, only the wire format differs.
 
-## Supported Agents
+## Install
 
-This skill works with any CLI-based coding agent that supports the [Agent Skills](https://agentskills.io) standard. Pick whichever one you already use.
-
-<details>
-<summary><strong>Claude Code</strong> (Anthropic)</summary>
-
-### Install Claude Code
-
-```bash
-# macOS / Linux
-curl -fsSL https://claude.ai/install.sh | bash
-
-# Windows (PowerShell)
-irm https://claude.ai/install.ps1 | iex
-```
-
-### Install this skill
-
-```bash
-npx skills add mgratzer/bloomery -a claude-code
-```
-
-Or manually:
-
-```bash
-git clone https://github.com/mgratzer/bloomery.git
-ln -s "$(pwd)/bloomery/skills/bloomery" ~/.claude/skills/bloomery
-```
-
-### Run
-
-```bash
-claude
-```
-
-```
-/bloomery
-```
-
-</details>
-
-<details>
-<summary><strong>Gemini CLI</strong> (Google)</summary>
-
-### Install Gemini CLI
-
-Requires Node.js 20+.
-
-```bash
-npm install -g @google/gemini-cli
-```
-
-### Install this skill
-
-```bash
-npx skills add mgratzer/bloomery -a gemini-cli
-```
-
-Or manually:
-
-```bash
-git clone https://github.com/mgratzer/bloomery.git
-ln -s "$(pwd)/bloomery/skills/bloomery" ~/.gemini/skills/bloomery
-```
-
-### Run
-
-```bash
-gemini
-```
-
-```
-/bloomery
-```
-
-</details>
-
-<details>
-<summary><strong>Codex CLI</strong> (OpenAI)</summary>
-
-### Install Codex CLI
-
-```bash
-npm install -g @openai/codex
-```
-
-### Install this skill
-
-```bash
-npx skills add mgratzer/bloomery -a codex
-```
-
-Or manually:
-
-```bash
-git clone https://github.com/mgratzer/bloomery.git
-ln -s "$(pwd)/bloomery/skills/bloomery" ~/.agents/skills/bloomery
-```
-
-### Run
-
-```bash
-codex
-```
-
-```
-$bloomery
-```
-
-</details>
-
-<details>
-<summary><strong>VS Code with GitHub Copilot</strong></summary>
-
-### Prerequisites
-
-A GitHub Copilot subscription (Pro, Pro+, Business, or Enterprise) and the [GitHub Copilot extension](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) for VS Code.
-
-### Install this skill
-
-Skills in VS Code are loaded from the `.github/skills/` directory of your project. Run this from the root of whichever project you want to use bloomery in:
-
-```bash
-mkdir -p .github/skills
-git clone --depth 1 https://github.com/mgratzer/bloomery.git /tmp/bloomery
-cp -r /tmp/bloomery/skills/bloomery .github/skills/bloomery
-```
-
-### Run
-
-Open the Copilot Chat panel in VS Code and type:
-
-```
-/bloomery
-```
-
-</details>
-
-<details>
-<summary><strong>GitHub Copilot CLI</strong> ⚠️</summary>
-
-> **Known limitation:** The Copilot CLI does not reliably follow the skill's structured instructions — it tends to improvise its own project setup instead of using the provided scaffold. If you have a Copilot subscription, use **VS Code with GitHub Copilot** instead (see above), which works correctly.
-
-### Install Copilot CLI
-
-Requires a Copilot subscription (Pro, Pro+, Business, or Enterprise) and Node.js 22+.
-
-```bash
-npm install -g @github/copilot
-```
-
-### Install this skill
-
-```bash
-npx skills add mgratzer/bloomery -a github-copilot
-```
-
-Or manually:
-
-```bash
-git clone https://github.com/mgratzer/bloomery.git
-ln -s "$(pwd)/bloomery/skills/bloomery" ~/.copilot/skills/bloomery
-```
-
-### Run
-
-```bash
-copilot
-```
-
-Copilot auto-invokes skills based on your prompt. Ask it to "build an agent" or "teach me how agentic loops work".
-
-</details>
-
-<details>
-<summary><strong>Pi</strong> (pi.dev)</summary>
-
-### Install Pi
-
-```bash
-npm install -g @mariozechner/pi-coding-agent
-```
-
-### Install this skill
-
-```bash
-npx skills add mgratzer/bloomery -a pi
-```
-
-Or manually:
-
-```bash
-git clone https://github.com/mgratzer/bloomery.git
-ln -s "$(pwd)/bloomery/skills/bloomery" ~/.pi/agent/skills/bloomery
-```
-
-### Run
-
-```bash
-pi
-```
-
-```
-/bloomery
-```
-
-</details>
-
-<details>
-<summary><strong>Other agents</strong></summary>
-
-Any agent that supports the [Agent Skills](https://agentskills.io) standard will work. The universal installer:
+This skill works with any coding agent that supports the [Agent Skills](https://agentskills.io) standard. The installer will ask you which agent you use and set everything up:
 
 ```bash
 npx skills add mgratzer/bloomery
 ```
 
-Or clone and symlink into your agent's skills directory (`~/.agents/skills/` works for most):
+Then open your agent and invoke the skill (usually `/bloomery` or `$bloomery` depending on your agent).
 
-```bash
-git clone https://github.com/mgratzer/bloomery.git
-ln -s "$(pwd)/bloomery/skills/bloomery" ~/.agents/skills/bloomery
-```
+> **⚠️ GitHub Copilot CLI:** The Copilot CLI did not reliably follow the skill's structured instructions in our tests. It tends to improvise its own project setup instead of using the provided scaffold. If you have a Copilot subscription, use **VS Code with GitHub Copilot** instead, which works correctly.
 
-</details>
+> **Note:** Different models can produce different output. We've tested with the latest models from Anthropic, OpenAI, and Google, all work well. Agents tested: Claude Code, Codex CLI, Gemini CLI, Pi, VS Code with GitHub Copilot, and OpenCode.
 
 ## Usage
-
-Open your coding agent and invoke the skill. The invocation syntax depends on your agent:
-
-| Agent | Command |
-|-------|---------|
-| Claude Code | `/bloomery` |
-| Gemini CLI | `/bloomery` |
-| Pi | `/bloomery` |
-| VS Code Copilot | `/bloomery` |
-| Codex CLI | `$bloomery` |
-| Copilot CLI | Just ask: "build an agent" |
 
 The skill will:
 
 1. Ask you to pick an LLM provider (Gemini, OpenAI/compatible, or Anthropic), your language, name your agent, and pick a track (Guided ~60-90min or Fast Track ~30-45min)
-2. Scaffold the starter project for you (boilerplate stdin loop, `.env` file, imports - the boring stuff)
+2. Scaffold the starter project for you (boilerplate stdin loop, `.env` file, imports, the boring stuff)
 3. Walk you through 8 incremental steps, validating your code at each one
 4. Surface "meta moments" connecting what you're building to how the agent you're using works
 
