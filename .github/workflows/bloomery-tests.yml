@@ -1,0 +1,21 @@
+name: Bloomery Shell Tests
+
+on:
+  push:
+    paths:
+      - 'skills/bloomery/**'
+  pull_request:
+    paths:
+      - 'skills/bloomery/**'
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install BATS
+        run: brew install bats-core
+
+      - name: Run tests
+        run: bats skills/bloomery/tests/
