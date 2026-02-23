@@ -76,7 +76,7 @@ if grep -q "edit_file" "$SOURCE_FILE" && grep -q "old_string\|new_string" "$SOUR
   DETECTED_STEP=8
 elif grep -q "run_bash" "$SOURCE_FILE" && grep -qi "exec\|spawn\|child_process\|subprocess\|os/exec\|Open3" "$SOURCE_FILE"; then
   DETECTED_STEP=7
-elif grep -q "read_file" "$SOURCE_FILE" && grep -qi "readFile\|ReadFile\|read_file\|File\.read" "$SOURCE_FILE"; then
+elif grep -q "read_file" "$SOURCE_FILE" && grep -qi "readFileSync\|readFile\|ReadFile\|os\.ReadFile\|File\.read\|open(" "$SOURCE_FILE"; then
   DETECTED_STEP=6
 elif grep -q "list_files" "$SOURCE_FILE" && grep -qi "functionCall\|tool_calls\|tool_use" "$SOURCE_FILE"; then
   DETECTED_STEP=5
