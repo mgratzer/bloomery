@@ -55,12 +55,56 @@ ISO_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # --- Helpers ---
 
-sed_inplace() {
-  if [[ "$(uname)" == "Darwin" ]]; then
-    sed -i '' "$@"
-  else
-    sed -i "$@"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATE_DIR="$SCRIPT_DIR/templates"
+
+apply_template() {
+  local template_file="$1"; shift
+  local content
+  content="$(<"$template_file")"
+
+  # Collect +BLOCK flags (sections to keep) and KEY VALUE pairs
+  local -a keep_blocks=()
+  local -a pairs=()
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == +* ]]; then
+      keep_blocks+=("${1#+}")
+      shift
+    elif [[ $# -ge 2 ]]; then
+      pairs+=("$1" "$2"); shift 2
+    else
+      shift
+    fi
+  done
+
+  # Process {{#BLOCK}}...{{/BLOCK}} conditional sections in one awk pass:
+  # kept blocks have markers stripped; unmatched blocks are removed entirely
+  if [[ "$content" == *'{{#'* ]]; then
+    local keep_csv=""
+    for b in ${keep_blocks[@]+"${keep_blocks[@]}"}; do keep_csv="${keep_csv:+$keep_csv,}$b"; done
+    content=$(printf '%s\n' "$content" | awk -v keeps="$keep_csv" '
+      BEGIN { n = split(keeps, a, ","); for (i = 1; i <= n; i++) keep[a[i]] = 1 }
+      /^\{\{#[A-Za-z_]+\}\}$/ {
+        block = substr($0, 4, length($0) - 5)
+        if (block in keep) next; skip = 1; next
+      }
+      /^\{\{\/[A-Za-z_]+\}\}$/ {
+        block = substr($0, 4, length($0) - 5)
+        if (block in keep) next; skip = 0; next
+      }
+      !skip
+    ')
   fi
+
+  # Simple {{KEY}} → value substitution
+  local i=0
+  while [[ $i -lt ${#pairs[@]} ]]; do
+    local key="${pairs[$i]}" val="${pairs[$((i+1))]}"
+    content="${content//\{\{${key}\}\}/${val}}"
+    i=$((i + 2))
+  done
+
+  printf '%s\n' "$content"
 }
 
 # --- Create project directory ---
@@ -75,268 +119,25 @@ fi
 
 if [[ "$LANGUAGE" == "go" ]]; then
   if [[ ! -f "$AGENT_DIR/go.mod" ]]; then
-    # Prefer `go mod init` for the correct version, fall back to writing manually
+    # Prefer `go mod init` for the correct version, fall back to template
     if (cd "$AGENT_DIR" && go mod init agent) 2>/dev/null; then
       : # success
     else
-      cat << 'EOF' > "$AGENT_DIR/go.mod"
-module agent
-
-go 1.21
-EOF
+      cp "$TEMPLATE_DIR/go/go.mod" "$AGENT_DIR/go.mod"
     fi
   fi
 fi
 
 # --- Write starter code ---
-# Each language writes Part A (imports + .env loading + API key check),
-# optional Part B (OpenAI extra vars), and Part C (stdin loop).
-# Go uses two complete variants because OpenAI vars go inside loadEnv().
 
-case "$LANGUAGE" in
-  typescript)
-    cat << 'PART_A' > "$AGENT_DIR/$ENTRY_FILE"
-import * as readline from "node:readline";
-import { readFileSync } from "node:fs";
-
-// Load .env file
-const env = readFileSync(".env", "utf-8");
-for (const line of env.split("\n")) {
-  const [key, ...vals] = line.split("=");
-  if (key?.trim() && vals.length) {
-    const v = vals.join("=").trim();
-    if (v && !v.startsWith("#")) process.env[key.trim()] = v;
-  }
-}
-
-const API_KEY = process.env.GEMINI_API_KEY;
-if (!API_KEY) {
-  console.error("Missing GEMINI_API_KEY in .env file");
-  process.exit(1);
-}
-PART_A
-    if [[ "$PROVIDER" == "openai" ]]; then
-      cat << 'PART_B' >> "$AGENT_DIR/$ENTRY_FILE"
-
-const BASE_URL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
-const MODEL = process.env.MODEL_NAME || "gpt-4o";
-PART_B
-    fi
-    cat << 'PART_C' >> "$AGENT_DIR/$ENTRY_FILE"
-
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const prompt = (q: string): Promise<string> =>
-  new Promise((resolve) => rl.question(q, resolve));
-
-async function main() {
-  while (true) {
-    const input = await prompt("> ");
-    // TODO: send to LLM API and print response
-  }
-}
-
-main().catch(console.error);
-PART_C
-    ;;
-
-  python)
-    cat << 'PART_A' > "$AGENT_DIR/$ENTRY_FILE"
-import json
-import os
-from urllib.request import urlopen, Request
-
-# Load .env file
-with open(".env") as f:
-    for line in f:
-        if "=" in line:
-            key, value = line.strip().split("=", 1)
-            value = value.strip()
-            if value and not value.startswith("#"):
-                os.environ[key.strip()] = value
-
-API_KEY = os.environ.get("GEMINI_API_KEY")
-if not API_KEY:
-    print("Missing GEMINI_API_KEY in .env file")
-    exit(1)
-PART_A
-    if [[ "$PROVIDER" == "openai" ]]; then
-      cat << 'PART_B' >> "$AGENT_DIR/$ENTRY_FILE"
-
-BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
-MODEL = os.environ.get("MODEL_NAME", "gpt-4o")
-PART_B
-    fi
-    cat << 'PART_C' >> "$AGENT_DIR/$ENTRY_FILE"
-
-def main():
-    while True:
-        try:
-            user_input = input("> ")
-        except (EOFError, KeyboardInterrupt):
-            break
-        # TODO: send to LLM API and print response
-
-main()
-PART_C
-    ;;
-
-  go)
-    if [[ "$PROVIDER" == "openai" ]]; then
-      cat << 'GO_OPENAI' > "$AGENT_DIR/$ENTRY_FILE"
-package main
-
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
-)
-
-var (
-	apiKey    string
-	baseURL   string
-	modelName string
-)
-
-func loadEnv() {
-	data, err := os.ReadFile(".env")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Could not read .env file:", err)
-		os.Exit(1)
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		if key, val, ok := strings.Cut(line, "="); ok {
-			val = strings.TrimSpace(val)
-			if val != "" && !strings.HasPrefix(val, "#") {
-				os.Setenv(strings.TrimSpace(key), val)
-			}
-		}
-	}
-	apiKey = os.Getenv("OPENAI_API_KEY")
-	if apiKey == "" {
-		fmt.Fprintln(os.Stderr, "Missing OPENAI_API_KEY in .env file")
-		os.Exit(1)
-	}
-	baseURL = os.Getenv("OPENAI_BASE_URL")
-	if baseURL == "" {
-		baseURL = "https://api.openai.com/v1"
-	}
-	modelName = os.Getenv("MODEL_NAME")
-	if modelName == "" {
-		modelName = "gpt-4o"
-	}
-}
-
-func main() {
-	loadEnv()
-	scanner := bufio.NewScanner(os.Stdin)
-	for {
-		fmt.Print("> ")
-		if !scanner.Scan() {
-			break
-		}
-		input := scanner.Text()
-		// TODO: send to LLM API and print response
-		_ = input
-	}
-}
-GO_OPENAI
-    else
-      cat << 'GO_DEFAULT' > "$AGENT_DIR/$ENTRY_FILE"
-package main
-
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
-)
-
-var apiKey string
-
-func loadEnv() {
-	data, err := os.ReadFile(".env")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Could not read .env file:", err)
-		os.Exit(1)
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		if key, val, ok := strings.Cut(line, "="); ok {
-			val = strings.TrimSpace(val)
-			if val != "" && !strings.HasPrefix(val, "#") {
-				os.Setenv(strings.TrimSpace(key), val)
-			}
-		}
-	}
-	apiKey = os.Getenv("GEMINI_API_KEY")
-	if apiKey == "" {
-		fmt.Fprintln(os.Stderr, "Missing GEMINI_API_KEY in .env file")
-		os.Exit(1)
-	}
-}
-
-func main() {
-	loadEnv()
-	scanner := bufio.NewScanner(os.Stdin)
-	for {
-		fmt.Print("> ")
-		if !scanner.Scan() {
-			break
-		}
-		input := scanner.Text()
-		// TODO: send to LLM API and print response
-		_ = input
-	}
-}
-GO_DEFAULT
-    fi
-    ;;
-
-  ruby)
-    cat << 'PART_A' > "$AGENT_DIR/$ENTRY_FILE"
-require "net/http"
-require "uri"
-require "json"
-
-# Load .env file
-File.readlines(".env").each do |line|
-  key, value = line.strip.split("=", 2)
-  next unless key && value && !value.empty? && !value.start_with?("#")
-  ENV[key.strip] = value.strip
-end
-
-API_KEY = ENV["GEMINI_API_KEY"]
-abort("Missing GEMINI_API_KEY in .env file") unless API_KEY && !API_KEY.empty?
-PART_A
-    if [[ "$PROVIDER" == "openai" ]]; then
-      cat << 'PART_B' >> "$AGENT_DIR/$ENTRY_FILE"
-
-BASE_URL = ENV["OPENAI_BASE_URL"] || "https://api.openai.com/v1"
-MODEL = ENV["MODEL_NAME"] || "gpt-4o"
-PART_B
-    fi
-    cat << 'PART_C' >> "$AGENT_DIR/$ENTRY_FILE"
-
-loop do
-  print "> "
-  input = gets
-  break if input.nil?
-  input = input.chomp
-  # TODO: send to LLM API and print response
-end
-PART_C
-    ;;
-esac
-
-# Substitute env var name for non-Gemini providers
-# (Go+OpenAI already has the correct var baked in)
-if [[ "$PROVIDER" != "gemini" ]]; then
-  if [[ "$LANGUAGE" == "go" && "$PROVIDER" == "openai" ]]; then
-    : # already correct
-  else
-    sed_inplace "s/GEMINI_API_KEY/$ENV_VAR/g" "$AGENT_DIR/$ENTRY_FILE"
-  fi
+KEEP_BLOCKS=()
+if [[ "$PROVIDER" == "openai" ]]; then
+  KEEP_BLOCKS=(+OPENAI)
 fi
+apply_template "$TEMPLATE_DIR/$LANGUAGE/$ENTRY_FILE" \
+  API_KEY_VAR "$ENV_VAR" \
+  ${KEEP_BLOCKS[@]+"${KEEP_BLOCKS[@]}"} \
+  > "$AGENT_DIR/$ENTRY_FILE"
 
 # --- Write .env ---
 
@@ -370,43 +171,13 @@ esac
 
 # --- Write .gitignore ---
 
-cat << 'EOF' > "$AGENT_DIR/.gitignore"
-.env
-.build-agent-progress
-.claude/
-EOF
-
-if [[ "$LANGUAGE" == "typescript" ]]; then
-  echo "node_modules/" >> "$AGENT_DIR/.gitignore"
-fi
+cp "$TEMPLATE_DIR/$LANGUAGE/.gitignore" "$AGENT_DIR/.gitignore"
 
 # --- Write AGENTS.md ---
 
-cat > "$AGENT_DIR/AGENTS.md" << AGENTS_EOF
-# $AGENT_NAME
-
-$PROVIDER/$LANGUAGE coding agent built from scratch with raw HTTP calls.
-
-## Setup
-1. Add your API key to \`.env\`
-2. Key URL: $KEY_URL
-
-## Run
-\`$RUN_CMD\`
-
-## How it works
-Agentic loop: prompt -> LLM -> tool call -> execute -> result back -> LLM -> ... -> text response
-
-## Tools
-- [ ] list_files
-- [ ] read_file
-- [ ] run_bash
-- [ ] edit_file
-
-## Structure
-- \`$ENTRY_FILE\` -- main agent source
-- \`.env\` -- API key (gitignored)
-AGENTS_EOF
+apply_template "$TEMPLATE_DIR/$LANGUAGE/AGENTS.md" \
+  AGENT_NAME "$AGENT_NAME" PROVIDER "$PROVIDER" KEY_URL "$KEY_URL" \
+  > "$AGENT_DIR/AGENTS.md"
 
 # --- Write .build-agent-progress ---
 
