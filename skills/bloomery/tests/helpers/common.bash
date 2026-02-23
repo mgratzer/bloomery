@@ -4,7 +4,7 @@ SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 setup() {
   TEST_TEMP_DIR="$(mktemp -d)"
-  cd "$TEST_TEMP_DIR"
+  cd "$TEST_TEMP_DIR" || return 1
 }
 
 teardown() {
