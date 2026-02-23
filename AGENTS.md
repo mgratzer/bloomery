@@ -7,9 +7,14 @@ An agent skill that teaches engineers how to build a coding agent from scratch u
 ```
 skills/bloomery/
 ├── SKILL.md                           # Core skill logic (philosophy, rules, step dispatch)
-├── scaffold.sh                        # Project scaffolding (starter code, .env, imports)
+├── scaffold.sh                        # Project scaffolding (copies templates, substitutes placeholders)
 ├── detect.sh                          # Progress detection (which step the user is on)
 ├── progress-update.sh                 # Progress file updates
+├── templates/                         # Standalone scaffold templates per language
+│   ├── typescript/                    # agent.ts, agent.openai.ts, .gitignore, AGENTS.md
+│   ├── python/                        # agent.py, agent.openai.py, .gitignore, AGENTS.md
+│   ├── go/                            # main.go, main.openai.go, go.mod, .gitignore, AGENTS.md
+│   └── ruby/                          # agent.rb, agent.openai.rb, .gitignore, AGENTS.md
 ├── references/
 │   ├── curriculum.md                  # 8-step curriculum (provider-agnostic)
 │   ├── providers/
@@ -21,6 +26,11 @@ skills/bloomery/
 │       ├── python.md                  # Python runtime, stdlib, starter code
 │       ├── go.md                      # Go runtime, stdlib, starter code
 │       └── ruby.md                    # Ruby runtime, stdlib, starter code
+├── tests/                             # BATS test suite (scaffold, detect, progress-update)
+│   ├── helpers/common.bash            # Shared setup/teardown and fixture helpers
+│   ├── scaffold.bats                  # 24 tests for scaffold.sh
+│   ├── detect.bats                    # 26 tests for detect.sh
+│   └── progress-update.bats          # 13 tests for progress-update.sh
 AGENTS.md                              # Agent instructions for contributing
 README.md                              # User-facing docs, install instructions
 LICENSE                                # MIT
