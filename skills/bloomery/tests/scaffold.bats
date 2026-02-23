@@ -151,7 +151,7 @@ load helpers/common
   [ "$status" -eq 0 ]
   [ -f testagent/go.mod ]
   grep -q "module agent" testagent/go.mod
-  grep -q "go 1.21" testagent/go.mod
+  grep -q "go 1.24" testagent/go.mod
 }
 
 # ── Directory name derivation (2 tests) ───────────────────────────────────────
