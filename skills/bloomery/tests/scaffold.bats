@@ -91,6 +91,17 @@ load helpers/common
   ! grep -q "GEMINI_API_KEY" testagent/agent.rb
 }
 
+# ── Conditional block stripping (1 test) ─────────────────────────────────────
+
+@test "non-openai: OPENAI block and markers are stripped" {
+  run_scaffold TestAgent typescript gemini guided
+  [ "$status" -eq 0 ]
+  ! grep -q "BASE_URL" testagent/agent.ts
+  ! grep -q "MODEL" testagent/agent.ts
+  ! grep -q "{{#OPENAI}}" testagent/agent.ts
+  ! grep -q "{{/OPENAI}}" testagent/agent.ts
+}
+
 # ── OpenAI compat mode (3 tests) ──────────────────────────────────────────────
 
 @test "openai compat: base-url and model set in env and progress" {
@@ -119,19 +130,18 @@ load helpers/common
 
 # ── Go special cases (3 tests) ────────────────────────────────────────────────
 
-@test "go+openai: uses dedicated template with baseURL and modelName" {
+@test "go+openai: OPENAI block exposes baseURL and modelName" {
   run_scaffold TestAgent go openai guided
   [ "$status" -eq 0 ]
   grep -q "baseURL" testagent/main.go
   grep -q "modelName" testagent/main.go
 }
 
-@test "go+openai: skips sed substitution — no mangled content" {
+@test "go+openai: uses correct API key and template structure" {
   run_scaffold TestAgent go openai guided
   [ "$status" -eq 0 ]
   grep -q 'OPENAI_API_KEY' testagent/main.go
   ! grep -q 'GEMINI_API_KEY' testagent/main.go
-  # Verify template structure is intact
   grep -q 'func loadEnv()' testagent/main.go
 }
 

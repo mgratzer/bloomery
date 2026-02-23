@@ -4,18 +4,28 @@ on:
   push:
     paths:
       - 'skills/bloomery/**'
+      - '.github/workflows/bloomery-tests.yml'
   pull_request:
     paths:
       - 'skills/bloomery/**'
+      - '.github/workflows/bloomery-tests.yml'
 
 jobs:
   test:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install BATS
-        run: brew install bats-core
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update && sudo apt-get install -y bats
+          else
+            brew install bats-core
+          fi
 
       - name: Run tests
         run: bats skills/bloomery/tests/

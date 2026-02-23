@@ -11,10 +11,10 @@ skills/bloomery/
 ├── detect.sh                          # Progress detection (which step the user is on)
 ├── progress-update.sh                 # Progress file updates
 ├── templates/                         # Standalone scaffold templates per language
-│   ├── typescript/                    # agent.ts, agent.openai.ts, .gitignore, AGENTS.md
-│   ├── python/                        # agent.py, agent.openai.py, .gitignore, AGENTS.md
-│   ├── go/                            # main.go, main.openai.go, go.mod, .gitignore, AGENTS.md
-│   └── ruby/                          # agent.rb, agent.openai.rb, .gitignore, AGENTS.md
+│   ├── typescript/                    # agent.ts, .gitignore, AGENTS.md
+│   ├── python/                        # agent.py, .gitignore, AGENTS.md
+│   ├── go/                            # main.go, go.mod, .gitignore, AGENTS.md
+│   └── ruby/                          # agent.rb, .gitignore, AGENTS.md
 ├── references/
 │   ├── curriculum.md                  # 8-step curriculum (provider-agnostic)
 │   ├── providers/

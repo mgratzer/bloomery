@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from urllib.request import urlopen, Request
 
 # Load .env file
@@ -13,7 +14,7 @@ with open(".env") as f:
 
 API_KEY = os.environ.get("{{API_KEY_VAR}}")
 if not API_KEY:
-    print("Missing {{API_KEY_VAR}} in .env file")
+    print("Missing {{API_KEY_VAR}} in .env file", file=sys.stderr)
     exit(1)
 {{#OPENAI}}
 
