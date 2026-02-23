@@ -7,6 +7,9 @@ An agent skill that teaches engineers how to build a coding agent from scratch u
 ```
 skills/bloomery/
 ├── SKILL.md                           # Core skill logic (philosophy, rules, step dispatch)
+├── scaffold.sh                        # Project scaffolding (starter code, .env, imports)
+├── detect.sh                          # Progress detection (which step the user is on)
+├── progress-update.sh                 # Progress file updates
 ├── references/
 │   ├── curriculum.md                  # 8-step curriculum (provider-agnostic)
 │   ├── providers/
@@ -18,13 +21,14 @@ skills/bloomery/
 │       ├── python.md                  # Python runtime, stdlib, starter code
 │       ├── go.md                      # Go runtime, stdlib, starter code
 │       └── ruby.md                    # Ruby runtime, stdlib, starter code
+AGENTS.md                              # Agent instructions for contributing
 README.md                              # User-facing docs, install instructions
 LICENSE                                # MIT
 ```
 
 ## How It Works
 
-At runtime, the agent loads SKILL.md + curriculum.md + one provider ref + one language ref (~1,100 lines). This keeps context efficient — the agent never loads all 2,300+ lines at once.
+At runtime, the agent loads SKILL.md + curriculum.md + one provider ref + one language ref (~1,100 lines). This keeps context efficient as the agent never loads all 2,300+ lines at once.
 
 ## Key Design Decisions
 
@@ -33,6 +37,10 @@ At runtime, the agent loads SKILL.md + curriculum.md + one provider ref + one la
 - **One file per provider/language**: Adding support = adding one file, no changes to SKILL.md or curriculum.
 - **Auto-advance**: Agent moves to the next step immediately after validation passes.
 - **Step 8 is optional**: edit_file is useful but doesn't teach new agent concepts.
+
+## Commits and PRs
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and PR titles (e.g. `feat: add Ruby provider`, `fix: correct env var name`, `docs: simplify install instructions`, `chore: update dependencies`).
 
 ## Contributing
 
