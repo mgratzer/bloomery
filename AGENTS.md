@@ -36,6 +36,16 @@ README.md                              # User-facing docs, install instructions
 LICENSE                                # MIT
 ```
 
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [Architecture](docs/architecture.md) | System design, data flow, module responsibilities |
+| [Development](docs/development.md) | Prerequisites, setup, daily workflow |
+| [Coding Guidelines](docs/coding-guidelines.md) | Shell script conventions, naming, markdown style |
+| [Testing](docs/testing.md) | BATS test commands, conventions, CI matrix |
+| [PR Workflow](docs/pr-workflow.md) | Commits, branch naming, PR checklist |
+
 ## How It Works
 
 At runtime, the agent loads SKILL.md + curriculum.md + one provider ref + one language ref (~1,100 lines). This keeps context efficient as the agent never loads all 2,300+ lines at once.
