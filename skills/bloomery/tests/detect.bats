@@ -283,9 +283,10 @@ EOF
   run_detect proj
   [ "$status" -eq 0 ]
   # Starts with { and ends with }
-  [[ "$output" =~ ^\{.*\}$ ]]
+  [[ "$output" =~ ^\{ ]]
+  [[ "$output" =~ \}$ ]]
   # Validate with jq if available
   if command -v jq &>/dev/null; then
-    echo "$output" | jq . >/dev/null 2>&1
+    echo "$output" | jq . >/dev/null
   fi
 }
