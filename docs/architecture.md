@@ -30,8 +30,8 @@ skills/bloomery/
 │       └── ruby.md                 # Ruby runtime, stdlib, starter code
 └── tests/                          # BATS test suite
     ├── helpers/common.bash         # Shared setup/teardown and fixture helpers
-    ├── scaffold.bats               # 24 tests for scaffold.sh
-    ├── detect.bats                 # 26 tests for detect.sh
+    ├── scaffold.bats               # 25 tests for scaffold.sh
+    ├── detect.bats                 # 34 tests for detect.sh
     └── progress-update.bats        # 13 tests for progress-update.sh
 ```
 

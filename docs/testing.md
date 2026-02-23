@@ -44,10 +44,10 @@ Each `.bats` file:
 
 | Script | Tests | File |
 |--------|-------|------|
-| `scaffold.sh` | 24 | `tests/scaffold.bats` |
-| `detect.sh` | 26 | `tests/detect.bats` |
+| `scaffold.sh` | 25 | `tests/scaffold.bats` |
+| `detect.sh` | 34 | `tests/detect.bats` |
 | `progress-update.sh` | 13 | `tests/progress-update.bats` |
-| **Total** | **63** | |
+| **Total** | **72** | |
 
 ## CI
 

@@ -246,6 +246,132 @@ EOF
   [[ "$output" == *'"detectedStep": 5'* ]]
 }
 
+@test "layer 2: step 6 — read_file with readFile (TypeScript)" {
+  mkdir -p proj
+  cat > proj/agent.ts << 'EOF'
+const messages = [{ role: "user", content: "hello" }];
+const systemInstruction = "You are helpful";
+const tools = [{ name: "list_files" }, { name: "read_file" }];
+const result = response.tool_calls[0];
+function handle_read_file(path) { return readFileSync(path); }
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 6'* ]]
+}
+
+@test "layer 2: step 6 — read_file with open (Python)" {
+  mkdir -p proj
+  cat > proj/agent.py << 'EOF'
+messages = [{"role": "user", "content": "hello"}]
+system_prompt = "You are helpful"
+tools = [{"name": "list_files"}, {"name": "read_file"}]
+result = response["tool_calls"][0]
+def handle_read_file(path):
+    return open(path).read()
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 6'* ]]
+}
+
+@test "layer 2: step 6 — read_file with ReadFile (Go)" {
+  mkdir -p proj
+  cat > proj/main.go << 'EOF'
+package main
+var messages = []Message{{Role: "user", Content: "hello"}}
+var systemInstruction = "You are helpful"
+var tools = []Tool{{Name: "list_files"}, {Name: "read_file"}}
+result := response.FunctionCall
+data, _ := os.ReadFile(path)
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 6'* ]]
+}
+
+@test "layer 2: step 6 — read_file with File.read (Ruby)" {
+  mkdir -p proj
+  cat > proj/agent.rb << 'EOF'
+messages = [{ role: "user", content: "hello" }]
+system_prompt = "You are helpful"
+tools = [{ name: "list_files" }, { name: "read_file" }]
+result = response["tool_use"]
+content = File.read(path)
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 6'* ]]
+}
+
+@test "layer 2: step 7 — run_bash with child_process (TypeScript)" {
+  mkdir -p proj
+  cat > proj/agent.ts << 'EOF'
+const messages = [{ role: "user", content: "hello" }];
+const systemInstruction = "You are helpful";
+const tools = [
+  { name: "list_files" },
+  { name: "read_file" },
+  { name: "run_bash" }
+];
+const result = response.tool_calls[0];
+function handle_read_file(path) { return readFileSync(path); }
+function handle_run_bash(cmd) { return child_process.execSync(cmd); }
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 7'* ]]
+}
+
+@test "layer 2: step 7 — run_bash with subprocess (Python)" {
+  mkdir -p proj
+  cat > proj/agent.py << 'EOF'
+messages = [{"role": "user", "content": "hello"}]
+system_prompt = "You are helpful"
+tools = [{"name": "list_files"}, {"name": "read_file"}, {"name": "run_bash"}]
+result = response["tool_calls"][0]
+def handle_read_file(path):
+    return open(path).read()
+def handle_run_bash(cmd):
+    return subprocess.run(cmd, capture_output=True)
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 7'* ]]
+}
+
+@test "layer 2: step 7 — run_bash with os/exec (Go)" {
+  mkdir -p proj
+  cat > proj/main.go << 'EOF'
+package main
+import "os/exec"
+var messages = []Message{{Role: "user", Content: "hello"}}
+var systemInstruction = "You are helpful"
+var tools = []Tool{{Name: "list_files"}, {Name: "read_file"}, {Name: "run_bash"}}
+result := response.FunctionCall
+data, _ := os.ReadFile(path)
+out, _ := exec.Command(cmd).Output()
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 7'* ]]
+}
+
+@test "layer 2: step 7 — run_bash with Open3 (Ruby)" {
+  mkdir -p proj
+  cat > proj/agent.rb << 'EOF'
+messages = [{ role: "user", content: "hello" }]
+system_prompt = "You are helpful"
+tools = [{ name: "list_files" }, { name: "read_file" }, { name: "run_bash" }]
+result = response["tool_use"]
+content = File.read(path)
+output = Open3.capture2(cmd)
+EOF
+  run_detect proj
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'"detectedStep": 7'* ]]
+}
+
 @test "layer 2: step 8 — edit_file with old_string" {
   mkdir -p proj
   cat > proj/agent.ts << 'EOF'
