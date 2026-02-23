@@ -4,7 +4,7 @@ load helpers/common
 
 # ── Argument validation (4 tests) ──────────────────────────────────────────────
 
-@test "missing arguments exits with error" {
+@test "scaffold: missing arguments exits with error" {
   run_scaffold
   [ "$status" -eq 1 ]
   [[ "$output" == *"Usage:"* ]]

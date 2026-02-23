@@ -4,7 +4,7 @@ load helpers/common
 
 # ── Validation (2 tests) ──────────────────────────────────────────────────────
 
-@test "missing arguments exits with error" {
+@test "progress-update: missing arguments exits with error" {
   run_progress_update
   [ "$status" -eq 1 ]
   [[ "$output" == *"Usage:"* ]]
