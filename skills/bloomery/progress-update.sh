@@ -82,15 +82,21 @@ step_title() {
   esac
 }
 
-if command -v git &>/dev/null && git -C "$AGENT_DIR" rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
-  TITLE=$(step_title "$COMPLETED_STEP")
-  (
-    cd "$AGENT_DIR"
-    git add -A
-    if ! git diff --cached --quiet 2>/dev/null; then
-      git commit -q -m "feat(step-$COMPLETED_STEP): $TITLE"
-    fi
-  ) 2>/dev/null || true
+if command -v git &>/dev/null; then
+  AGENT_ABS=$(cd "$AGENT_DIR" && pwd -P)
+  TOPLEVEL=$(git -C "$AGENT_DIR" rev-parse --show-toplevel 2>/dev/null) || true
+  if [[ -n "$TOPLEVEL" && "$TOPLEVEL" == "$AGENT_ABS" ]]; then
+    TITLE=$(step_title "$COMPLETED_STEP")
+    (
+      cd "$AGENT_DIR"
+      git config --get user.name  >/dev/null 2>&1 || git config user.name  "Bloomery"
+      git config --get user.email >/dev/null 2>&1 || git config user.email "bloomery@local"
+      git add -A
+      if ! git diff --cached --quiet 2>/dev/null; then
+        git commit -q -m "feat(step-$COMPLETED_STEP): $TITLE"
+      fi
+    ) 2>/dev/null || true
+  fi
 fi
 
 # --- Summary ---
