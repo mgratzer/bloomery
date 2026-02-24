@@ -66,6 +66,33 @@ if [[ -f "$AGENTS_FILE" ]]; then
   esac
 fi
 
+# --- Git commit for step progress ---
+
+step_title() {
+  case "$1" in
+    1) echo "basic chat REPL" ;;
+    2) echo "multi-turn conversation" ;;
+    3) echo "system prompt" ;;
+    4) echo "tool definition and detection" ;;
+    5) echo "tool execution and agentic loop" ;;
+    6) echo "read file tool" ;;
+    7) echo "bash tool" ;;
+    8) echo "edit file tool" ;;
+    *) echo "step $1" ;;
+  esac
+}
+
+if command -v git &>/dev/null && git -C "$AGENT_DIR" rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
+  TITLE=$(step_title "$COMPLETED_STEP")
+  (
+    cd "$AGENT_DIR"
+    git add -A
+    if ! git diff --cached --quiet 2>/dev/null; then
+      git commit -q -m "feat(step-$COMPLETED_STEP): $TITLE"
+    fi
+  ) 2>/dev/null || true
+fi
+
 # --- Summary ---
 
 echo "Step $COMPLETED_STEP complete → now on Step $NEXT_STEP"

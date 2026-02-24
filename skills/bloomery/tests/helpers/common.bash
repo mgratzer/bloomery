@@ -5,6 +5,12 @@ SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 setup() {
   TEST_TEMP_DIR="$(mktemp -d)"
   cd "$TEST_TEMP_DIR" || return 1
+
+  # Ensure git commits work even without global config (CI, containers)
+  export GIT_AUTHOR_NAME="Test"
+  export GIT_AUTHOR_EMAIL="test@test.com"
+  export GIT_COMMITTER_NAME="Test"
+  export GIT_COMMITTER_EMAIL="test@test.com"
 }
 
 teardown() {

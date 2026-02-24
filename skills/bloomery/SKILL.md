@@ -125,7 +125,7 @@ When first invoked, do the following:
    bash <skill-dir>/scaffold.sh "<agent-name>" <language> openai <track> "<base-url>" "<model-name>"
    ```
 
-   The script creates: the project directory (lowercased agent name), starter file with boilerplate stdin loop, `.env`, `.gitignore`, `AGENTS.md`, and `.build-agent-progress`. For Go, it also runs `go mod init`.
+   The script creates: the project directory (lowercased agent name), starter file with boilerplate stdin loop, `.env`, `.gitignore`, `AGENTS.md`, and `.build-agent-progress`. For Go, it also runs `go mod init`. It also initializes a local git repository and creates an initial commit (`feat: scaffold <name> (<language>/<provider>)`), so the user has full version history from the start.
 
    **b.** Tell the user how to run their agent and verify it works (should prompt for input, print "TODO" or similar for the LLM call).
 
@@ -250,13 +250,13 @@ For each step, follow the curriculum in `references/curriculum.md`:
 3. **Let them code** — stop talking, let them write. They'll tell you when they're ready for review or if they're stuck.
 4. **Validate (MANDATORY GATE)** — use `Read` to read their code. Check against EVERY item in the validation criteria from the curriculum. Give specific, actionable feedback. See "Validation Gate" below.
 5. **Surface the meta moment** — briefly point out the connection between what they just built and how the coding agent they're using right now works.
-6. **Immediately advance** — don't wait for the user to say "next" or "continue." Once validation passes: run `progress-update.sh <agent-dir> <completed-step>`, then in the SAME message, start the next step (introduce its concept + give its specification). Keep the momentum going.
+6. **Immediately advance** — don't wait for the user to say "next" or "continue." Once validation passes: run `progress-update.sh <agent-dir> <completed-step>` (this also commits the step's changes to git with a conventional commit like `feat(step-N): <title>`), then in the SAME message, start the next step (introduce its concept + give its specification). Keep the momentum going.
 
 ### Fast Track flow:
 1. **Give the fast track spec** from the curriculum (one-line summary + pointer to provider reference)
 2. **Let them code**
 3. **Validate (MANDATORY GATE)** — same criteria, more concise feedback. See "Validation Gate" below.
-4. **Immediately advance** — once validation passes, run `progress-update.sh`, then start the next step in the same message.
+4. **Immediately advance** — once validation passes, run `progress-update.sh` (this also commits to git), then start the next step in the same message.
 
 ### Validation Gate
 

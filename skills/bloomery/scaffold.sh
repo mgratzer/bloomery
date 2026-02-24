@@ -202,6 +202,18 @@ entryFile=$ENTRY_FILE
 lastUpdated=$ISO_DATE
 PROGRESS_EOF
 
+# --- Initialize git repo and commit initial scaffold ---
+
+if command -v git &>/dev/null; then
+  if (cd "$AGENT_DIR" && git init -q && git add -A && git commit -q -m "feat: scaffold $AGENT_NAME ($LANGUAGE/$PROVIDER)") 2>/dev/null; then
+    GIT_INIT=true
+  else
+    GIT_INIT=false
+  fi
+else
+  GIT_INIT=false
+fi
+
 # --- Summary ---
 
 echo ""
@@ -213,6 +225,9 @@ echo "  AGENTS.md"
 echo "  .build-agent-progress"
 if [[ "$LANGUAGE" == "go" ]]; then
   echo "  go.mod"
+fi
+if [[ "$GIT_INIT" == "true" ]]; then
+  echo "  git repo initialized with initial commit"
 fi
 echo ""
 echo "Run: cd $AGENT_DIR && $RUN_CMD"
