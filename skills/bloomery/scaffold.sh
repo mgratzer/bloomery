@@ -205,7 +205,14 @@ PROGRESS_EOF
 # --- Initialize git repo and commit initial scaffold ---
 
 if command -v git &>/dev/null; then
-  if (cd "$AGENT_DIR" && git init -q && git add -A && git commit -q -m "feat: scaffold $AGENT_NAME ($LANGUAGE/$PROVIDER)") 2>/dev/null; then
+  if (
+    cd "$AGENT_DIR"
+    git init -q
+    git config --get user.name  >/dev/null 2>&1 || git config user.name  "Bloomery"
+    git config --get user.email >/dev/null 2>&1 || git config user.email "bloomery@local"
+    git add -A
+    git commit -q -m "feat: scaffold $AGENT_NAME ($LANGUAGE/$PROVIDER)"
+  ) 2>/dev/null; then
     GIT_INIT=true
   else
     GIT_INIT=false
