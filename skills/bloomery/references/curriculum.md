@@ -375,11 +375,11 @@ Congratulate the user — they just built a coding agent from scratch. This is a
 **Offer to push to GitHub:**
 1. Ask if they'd like to push their agent to a GitHub repo on their personal account so they can share it with colleagues.
 2. If yes, help them set it up:
-   - `git init` (if not already a repo)
+   - If git is available, the repo is already initialized with a commit per step — they can run `git log --oneline` to see their build history
    - Verify `.gitignore` is in place (`scaffold.sh` created it) — ensure `.build-agent-progress`, `.env`, `node_modules/`, etc. are listed
    - Create a short `README.md` with the agent's name, what it does, how to run it, and a note that it was built from scratch with no SDKs
-   - Stage, commit, and push using `gh repo create <agent-name> --public --source=. --push`
-3. Suggest they share the link with colleagues — it's a great conversation starter about how agents work under the hood. Anyone can clone it, set their API key, and try it out.
+   - Stage, commit the README, and push using `gh repo create <agent-name> --public --source=. --push`
+3. Suggest they share the link with colleagues — it's a great conversation starter about how agents work under the hood. Anyone can clone it, set their API key, and try it out. If git tracking was active, the commit history shows the incremental build process step by step.
 
 **Frame it as a teaching moment:** "You now understand how every coding agent works at its core — an LLM in a loop with tools. The next time you use any AI coding tool, you'll know exactly what's happening under the hood."
 

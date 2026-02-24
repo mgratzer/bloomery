@@ -221,3 +221,42 @@ load helpers/common
   [ "$status" -eq 0 ]
   [[ "$output" == *"already exists"* ]]
 }
+
+# ── Git initialization (4 tests) ──────────────────────────────────────────────
+
+@test "scaffold initializes git repo" {
+  command -v git >/dev/null || skip "git not available"
+  run_scaffold TestAgent typescript gemini guided
+  [ "$status" -eq 0 ]
+  [ -d testagent/.git ]
+}
+
+@test "scaffold creates initial commit with conventional message" {
+  command -v git >/dev/null || skip "git not available"
+  run_scaffold TestAgent typescript gemini guided
+  [ "$status" -eq 0 ]
+  local msg
+  msg=$(cd testagent && git log --oneline -1 --format=%s)
+  [[ "$msg" == "feat: scaffold TestAgent (typescript/gemini)" ]]
+}
+
+@test "scaffold: initial commit tracks expected files, not secrets" {
+  command -v git >/dev/null || skip "git not available"
+  run_scaffold TestAgent typescript gemini guided
+  [ "$status" -eq 0 ]
+  local files
+  files=$(cd testagent && git ls-files)
+  [[ "$files" == *"agent.ts"* ]]
+  [[ "$files" == *".gitignore"* ]]
+  [[ "$files" == *"AGENTS.md"* ]]
+  # .env and .build-agent-progress are gitignored
+  [[ "$files" != *".env"* ]]
+  [[ "$files" != *".build-agent-progress"* ]]
+}
+
+@test "scaffold: summary mentions git initialization" {
+  command -v git >/dev/null || skip "git not available"
+  run_scaffold TestAgent typescript gemini guided
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"git repo initialized"* ]]
+}

@@ -119,3 +119,54 @@ load helpers/common
   [[ "$output" == *"Step 1 complete"* ]]
   [[ "$output" == *"Step 2"* ]]
 }
+
+# ── Git commits (4 tests) ─────────────────────────────────────────────────────
+
+@test "progress-update commits with conventional message for step 1" {
+  command -v git >/dev/null || skip "git not available"
+  create_progress_fixture myagent
+  (cd myagent && git init -q && git add -A && git commit -q -m "feat: scaffold")
+  # Simulate user adding code
+  echo 'const chat = true;' >> myagent/AGENTS.md
+  run_progress_update myagent 1
+  [ "$status" -eq 0 ]
+  local msg
+  msg=$(cd myagent && git log --oneline -1 --format=%s)
+  [[ "$msg" == "feat(step-1): basic chat REPL" ]]
+}
+
+@test "progress-update commits with conventional message for step 5" {
+  command -v git >/dev/null || skip "git not available"
+  create_progress_fixture myagent
+  (cd myagent && git init -q && git add -A && git commit -q -m "feat: scaffold")
+  echo 'const tools = true;' >> myagent/AGENTS.md
+  run_progress_update myagent 5
+  [ "$status" -eq 0 ]
+  local msg
+  msg=$(cd myagent && git log --oneline -1 --format=%s)
+  [[ "$msg" == "feat(step-5): tool execution and agentic loop" ]]
+}
+
+@test "progress-update: no git repo does not error" {
+  create_progress_fixture myagent
+  run_progress_update myagent 1
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Step 1 complete"* ]]
+  # No .git directory
+  [ ! -d myagent/.git ]
+}
+
+@test "progress-update: full step sequence produces correct git log" {
+  command -v git >/dev/null || skip "git not available"
+  create_progress_fixture myagent
+  (cd myagent && git init -q && git add -A && git commit -q -m "feat: scaffold")
+  for step in 1 2 3; do
+    echo "step $step code" >> myagent/AGENTS.md
+    "$SKILL_DIR/progress-update.sh" myagent "$step"
+  done
+  local log
+  log=$(cd myagent && git log --oneline --format=%s)
+  [[ "$log" == *"feat(step-3): system prompt"* ]]
+  [[ "$log" == *"feat(step-2): multi-turn conversation"* ]]
+  [[ "$log" == *"feat(step-1): basic chat REPL"* ]]
+}
