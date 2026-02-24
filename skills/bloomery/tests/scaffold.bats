@@ -225,12 +225,14 @@ load helpers/common
 # ── Git initialization (4 tests) ──────────────────────────────────────────────
 
 @test "scaffold initializes git repo" {
+  command -v git >/dev/null || skip "git not available"
   run_scaffold TestAgent typescript gemini guided
   [ "$status" -eq 0 ]
   [ -d testagent/.git ]
 }
 
 @test "scaffold creates initial commit with conventional message" {
+  command -v git >/dev/null || skip "git not available"
   run_scaffold TestAgent typescript gemini guided
   [ "$status" -eq 0 ]
   local msg
@@ -239,6 +241,7 @@ load helpers/common
 }
 
 @test "scaffold: initial commit tracks expected files, not secrets" {
+  command -v git >/dev/null || skip "git not available"
   run_scaffold TestAgent typescript gemini guided
   [ "$status" -eq 0 ]
   local files
@@ -252,6 +255,7 @@ load helpers/common
 }
 
 @test "scaffold: summary mentions git initialization" {
+  command -v git >/dev/null || skip "git not available"
   run_scaffold TestAgent typescript gemini guided
   [ "$status" -eq 0 ]
   [[ "$output" == *"git repo initialized"* ]]

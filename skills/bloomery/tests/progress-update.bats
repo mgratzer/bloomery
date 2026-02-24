@@ -123,6 +123,7 @@ load helpers/common
 # ── Git commits (4 tests) ─────────────────────────────────────────────────────
 
 @test "progress-update commits with conventional message for step 1" {
+  command -v git >/dev/null || skip "git not available"
   create_progress_fixture myagent
   (cd myagent && git init -q && git add -A && git commit -q -m "feat: scaffold")
   # Simulate user adding code
@@ -135,6 +136,7 @@ load helpers/common
 }
 
 @test "progress-update commits with conventional message for step 5" {
+  command -v git >/dev/null || skip "git not available"
   create_progress_fixture myagent
   (cd myagent && git init -q && git add -A && git commit -q -m "feat: scaffold")
   echo 'const tools = true;' >> myagent/AGENTS.md
@@ -155,6 +157,7 @@ load helpers/common
 }
 
 @test "progress-update: full step sequence produces correct git log" {
+  command -v git >/dev/null || skip "git not available"
   create_progress_fixture myagent
   (cd myagent && git init -q && git add -A && git commit -q -m "feat: scaffold")
   for step in 1 2 3; do
